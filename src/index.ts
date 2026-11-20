@@ -1,14 +1,14 @@
 import type { Server } from 'http';
+import dns from 'node:dns';
 import app from './app';
 import { connectDB, disconnectDB } from './config/db';
 import { config } from './config/env';
 import { logger } from './config/logger';
 
+// Use Google DNS so MongoDB Atlas SRV records resolve in restricted networks.
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 let server: Server | undefined;
-
-import dns from "node:dns";
-
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const shutdown = (signal: string, exitCode = 0) => {
   logger.info(`${signal} received, shutting down gracefully`);
@@ -18,7 +18,6 @@ const shutdown = (signal: string, exitCode = 0) => {
   };
   if (server) server.close(() => void finish());
   else void finish();
-  // Force exit if connections do not drain in time.
   setTimeout(() => process.exit(exitCode || 1), 10_000).unref();
 };
 
