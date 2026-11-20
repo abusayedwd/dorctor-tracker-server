@@ -106,7 +106,7 @@ router.post(
 
     await Promise.all([Doctor.syncIndexes(), Patient.syncIndexes(), User.syncIndexes(), RefreshToken.syncIndexes()]);
 
-    sendResponse(res, { message: `Seeded 40 doctors and 900 patients. Admin: ${config.seedAdmin.email}` });
+    sendResponse(res, { message: `Seeded 40 doctors and 900 patients. Admin: ${config.seedAdmin.email}`, data: null });
   }),
 );
 
