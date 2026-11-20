@@ -28,6 +28,18 @@ const normalise = (err: unknown): ApiError => {
   if (err instanceof SyntaxError && 'body' in err) {
     return ApiError.badRequest('Malformed JSON body');
   }
+  // MongoDB buffering timeout — DB not connected or query timed out
+  if (
+    err instanceof Error &&
+    (err.message.includes('buffering timed out') ||
+      err.message.includes('ECONNREFUSED') ||
+      err.message.includes('querySrv') ||
+      err.name === 'MongooseError' ||
+      err.name === 'MongoNetworkError' ||
+      err.name === 'MongoServerSelectionError')
+  ) {
+    return new ApiError(503, 'Database is currently unavailable. Please try again shortly.');
+  }
 
   const error = new ApiError(500, 'Internal server error');
   Object.defineProperty(error, 'cause', { value: err });
@@ -38,14 +50,16 @@ const normalise = (err: unknown): ApiError => {
 export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const apiError = normalise(err);
 
-  if (apiError.statusCode >= 500) {
+  if (apiError.statusCode >= 500 && apiError.statusCode !== 503) {
     logger.error(`${req.method} ${req.originalUrl}`, err);
+  } else if (apiError.statusCode === 503) {
+    logger.warn(`${req.method} ${req.originalUrl} — DB unavailable`);
   }
 
   res.status(apiError.statusCode).json({
     success: false,
     message: apiError.message,
     ...(apiError.details !== undefined && { errors: apiError.details }),
-    ...(!config.isProd && apiError.statusCode >= 500 && { stack: (err as Error)?.stack }),
+    ...(!config.isProd && apiError.statusCode >= 500 && apiError.statusCode !== 503 && { stack: (err as Error)?.stack }),
   });
 };

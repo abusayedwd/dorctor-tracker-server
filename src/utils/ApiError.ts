@@ -25,4 +25,7 @@ export class ApiError extends Error {
   static conflict(message = 'Resource already exists') {
     return new ApiError(409, message);
   }
+  static serviceUnavailable(message = 'Service temporarily unavailable. Please try again shortly.') {
+    return new ApiError(503, message);
+  }
 }

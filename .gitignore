@@ -11,7 +11,7 @@ npm-debug.log*
 # Environment variables (never commit secrets)
 .env
 .env.*
-.env.example
+!.env.example
 
 # OS / editor
 .DS_Store

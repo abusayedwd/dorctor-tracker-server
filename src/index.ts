@@ -6,6 +6,10 @@ import { logger } from './config/logger';
 
 let server: Server | undefined;
 
+import dns from "node:dns";
+
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
+
 const shutdown = (signal: string, exitCode = 0) => {
   logger.info(`${signal} received, shutting down gracefully`);
   const finish = async () => {

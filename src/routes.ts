@@ -4,10 +4,12 @@ import authRoutes from './modules/auth/auth.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import doctorRoutes from './modules/doctor/doctor.routes';
 import patientRoutes from './modules/patient/patient.routes';
+import seedRoutes from './modules/seed/seed.routes';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/seed', seedRoutes);
 
 // Everything below requires a signed-in admin.
 router.use(authenticate, authorize('admin'));

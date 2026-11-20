@@ -4,12 +4,20 @@ import { logger } from './logger';
 
 export const connectDB = async () => {
   mongoose.set('strictQuery', true);
-  // Build indexes automatically in development; in production indexes should be
-  // created by a migration step so app boots are not blocked by index builds.
   mongoose.set('autoIndex', !config.isProd);
 
-  await mongoose.connect(config.mongoUrl, { maxPoolSize: 20 });
-  logger.info(`MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`);
+  try {
+    await mongoose.connect(config.mongoUrl, {
+      maxPoolSize: 20,
+      serverSelectionTimeoutMS: 8000,  // fail fast — 8s instead of 30s
+      connectTimeoutMS: 8000,
+      socketTimeoutMS: 30000,
+    });
+    logger.info(`MongoDB connected: ${mongoose.connection.host}/${mongoose.connection.name}`);
+  } catch (err) {
+    logger.error('MongoDB connection failed', err);
+    throw err;
+  }
 };
 
 export const disconnectDB = () => mongoose.disconnect();
